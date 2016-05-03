@@ -27,8 +27,8 @@
 #include "fileio.h"
 #include "datafile.h"
 
-/* open_data_file - opens a data file for reading. Returns a pointer to 
-   entries-structure or NULL on error. If name is NULL, just allocates 
+/* open_data_file - opens a data file for reading. Returns a pointer to
+   entries-structure or NULL on error. If name is NULL, just allocates
    the data structure but doesn't open any file. */
 
 struct entries *open_data_file(char *name)
@@ -36,9 +36,9 @@ struct entries *open_data_file(char *name)
   struct entries *entries;
 
   lvq_errno = 0;
-  
+
   entries = alloc_entries();
-  if (entries == NULL) 
+  if (entries == NULL)
     return NULL;
 
   if (name)
@@ -53,7 +53,7 @@ struct entries *open_data_file(char *name)
   return entries;
 }
 
-/* alloc_entries - allocate and initialize an entries-structure. Return NULL 
+/* alloc_entries - allocate and initialize an entries-structure. Return NULL
    on error. */
 
 struct entries *alloc_entries(void)
@@ -106,7 +106,7 @@ struct entries *copy_entries(struct entries *entr)
 }
 
 
-/* read_headers - reads the header information from file and sets the 
+/* read_headers - reads the header information from file and sets the
    entries variables accordingly. Return a non-zero value on error. */
 
 int read_headers(struct entries *entries)
@@ -120,17 +120,17 @@ int read_headers(struct entries *entries)
   clear_err();
   /* Find the first not-comment line */
 
-  do 
+  do
     {
-      iline = getline(fi);
+      iline = getline2(fi);
       row++;
       if (iline == NULL) {
 	fprintf(stderr, "Can't read file %s", fi->name);
 	return lvq_errno;
       }
-      
+
     } while (iline[0] == '#');
-  
+
   /* get dimension */
   sta = sscanf(iline, "%d", &dim);
   if (sta <= 0) {
@@ -147,17 +147,17 @@ int read_headers(struct entries *entries)
   return error;
 }
 
-/* skip_headers - skip over headers of a file. Used when a file is re-opened. 
+/* skip_headers - skip over headers of a file. Used when a file is re-opened.
    Returns a non-zero value on error. */
 
 int skip_headers(struct file_info *fi)
 {
   char *iline;
 
-  /* Currently all header information is on the first non-comment line, so 
+  /* Currently all header information is on the first non-comment line, so
      we just skip it. */
 
-  while ((iline = getline(fi)) != NULL)
+  while ((iline = getline2(fi)) != NULL)
     if (iline[0] != '#')
       break;
 
@@ -171,8 +171,8 @@ int skip_headers(struct file_info *fi)
 }
 
 /* rewind_file - go to the beginning of file to the point where the first
-   data entry is. If file is an ordinary file, seeks to the start of file. 
-   If the file is a compressed file, closes the old file and runs the 
+   data entry is. If file is an ordinary file, seeks to the start of file.
+   If the file is a compressed file, closes the old file and runs the
    uncompressing command again. Returns 0 on success, error code otherwise. */
 
 int rewind_file(struct file_info *fi)
@@ -217,18 +217,18 @@ int rewind_file(struct file_info *fi)
   fi->flags.eof = 0;
   fi->error = 0;
   fi->lineno = 0;
-  
+
   /* skip the headers to to go the first entry */
   return skip_headers(fi);
 }
-	 
-/* open_entries - open a data file. Returns a pointer to a ready-to-use 
+
+/* open_entries - open a data file. Returns a pointer to a ready-to-use
    entries -structure. Return NULL on error. */
 
 struct entries *open_entries(char *name)
 {
   struct entries *entries;
-  
+
   /* open file */
   if ((entries = open_data_file(name)) == NULL)
     return NULL;
@@ -253,7 +253,7 @@ void close_entries(struct entries *entries)
       /* deallocate data */
       if (entries->entries)
 	free_entrys(entries->entries);
-      
+
       /* close file */
       if (entries->fi)
 	close_file(entries->fi);
@@ -278,7 +278,7 @@ struct entries *read_entries(struct entries *entries)
   struct file_info *fi = entries->fi;
 
   /* get first entry */
-  
+
   next = entries->entries;
   entr = next;
   if (next)
@@ -286,18 +286,18 @@ struct entries *read_entries(struct entries *entries)
 
   entr = load_entry(entries, entr);
   prev = entr;
-  
+
   entries->entries = entr;
   if (entr == NULL)
     {
       if (lvq_errno)
 	{
-	  fprintf(stderr, "read_entries: Error loading from file %s\n", 
+	  fprintf(stderr, "read_entries: Error loading from file %s\n",
 		  fi->name);
 	}
       return NULL;
     }
-  
+
   noc++;
   do
     {
@@ -305,19 +305,19 @@ struct entries *read_entries(struct entries *entries)
       if ((entries->flags.loadmode == LOADMODE_BUFFER) &&
 	  (noc >= entries->buffer))
 	break;
-      
+
       entr = next;
       if (next)
 	next = next->next;
-      
+
       entr = load_entry(entries, entr);
       prev->next = entr;
-      
+
       prev = entr;
-      if (entr) 
+      if (entr)
 	noc++;
     } while (entr != NULL);
-      
+
   /* deallocate remaining entries in list */
   {
     long freed = 0;
@@ -347,7 +347,7 @@ struct entries *read_entries(struct entries *entries)
       close_file(entries->fi);
       entries->fi = NULL;
     }
-  else 
+  else
     {
       /* With buffered loading we dont know the length of the file
 	 until it has been read once. The following trys to do this */
@@ -380,8 +380,8 @@ struct entries *read_entries(struct entries *entries)
   return(entries);
 }
 
- /****************************************************************** 
- * Routines to store codebook vectors                              * 
+ /******************************************************************
+ * Routines to store codebook vectors                              *
  *******************************************************************/
 
 /* save_entries_wcomments - saves data to a file with optional comment
@@ -408,8 +408,10 @@ int save_entries_wcomments(struct entries *codes, char *out_code_file, char *com
       goto end;
     }
   /* write comments if there are any */
-  if (comments)
-    fputs(comments, fi2fp(fi));
+  if (comments) {
+    FILE* fp = fi2fp(fi);
+    fputs(comments, fp);
+  }
 
   /* write entries */
   for (entry = rewind_entries(codes, &p); entry != NULL; entry = next_entry(&p))
@@ -421,8 +423,8 @@ int save_entries_wcomments(struct entries *codes, char *out_code_file, char *com
 	  goto end;
 	}
     }
-  
- end:      
+
+ end:
   if (fi)
     close_file(fi);
   return error;
@@ -454,37 +456,37 @@ int write_header(struct file_info *fi, struct entries *codes)
 
 /* write_entry - writes one data entry to file. */
 
-int write_entry(struct file_info *fi, struct entries *entr, 
+int write_entry(struct file_info *fi, struct entries *entr,
 		struct data_entry *entry)
 {
   FILE *fp = fi2fp(fi);
   int i, label;
 
   /* write vector */
-  for (i = 0; i < entr->dimension; i++) 
+  for (i = 0; i < entr->dimension; i++)
     if ((entry->mask != NULL) && (entry->mask[i] != 0 ))
       fprintf(fp, "%s ", masked_string);
     else
       fprintf(fp, "%g ", entry->points[i]);
- 
+
 
   /* Write labels. The last label is empty */
   for (i = 0;;i++)
     {
       label = get_entry_labels(entry, i);
-      if (label != LABEL_EMPTY) 
+      if (label != LABEL_EMPTY)
 	fprintf(fp, "%s ", find_conv_to_lab(label));
       else
 	break;
     }
   fprintf(fp, "\n");
-  
+
   /* Some kind of error checking could be added ... */
   return 0;
 }
 
-/* initialize and possibly allocate room for data_entry. If entry is NULL, 
-   a new entry is allocated and initialized. If entry is a pointer to an 
+/* initialize and possibly allocate room for data_entry. If entry is NULL,
+   a new entry is allocated and initialized. If entry is a pointer to an
    old entry, the old entry is re-initialized. Return NULL on error. */
 
 struct data_entry *init_entry(struct entries *entr, struct data_entry *entry)
@@ -529,7 +531,7 @@ struct data_entry *init_entry(struct entries *entr, struct data_entry *entry)
       free(entry->fixed);
       entry->fixed = NULL;
     }
-  
+
   clear_entry_labels(entry);
   entry->weight = 0;
 
@@ -576,14 +578,14 @@ static char *set_mask(char *mask, int dim, int n)
     mask[n] = 1;
   return mask;
 }
-  
+
 
 /* the string that indicates a vector component that should be ignored */
 
 char *masked_string = MASKED_VALUE;
 
-/* load_entry - loads one data_entry from file associated with entr. If 
-   entry is non-NULL, an old data_entry is reused, otherwise a new entry 
+/* load_entry - loads one data_entry from file associated with entr. If
+   entry is non-NULL, an old data_entry is reused, otherwise a new entry
    is allocated. Returns NULL on error. */
 
 struct data_entry *load_entry(struct entries *entr, struct data_entry *entry)
@@ -608,7 +610,7 @@ struct data_entry *load_entry(struct entries *entr, struct data_entry *entry)
   while (!line)
     {
       /* get line from file */
-      line = getline(fi);
+      line = getline2(fi);
 
       /* The caller should check the entr->fi->error for errors or end
 	 of file */
@@ -618,7 +620,7 @@ struct data_entry *load_entry(struct entries *entr, struct data_entry *entry)
 	  ERROR(fi->error);
 	  return NULL;
 	}
-      
+
       /* skip comments */
       if (line[0] == '#')
 	line = NULL;
@@ -626,12 +628,12 @@ struct data_entry *load_entry(struct entries *entr, struct data_entry *entry)
 
   row = entr->fi->lineno;
 
-  /* If entry is given, a new entry is loaded on over the old one. If 
+  /* If entry is given, a new entry is loaded on over the old one. If
      entry == NULL, room for the new entry is allocated */
 
   entry = init_entry(entr, entry);
   if (entry == NULL)
-    return NULL; 
+    return NULL;
 
   maskcnt = 0;
   toke = strtok(line, SEPARATOR_CHARS);
@@ -645,13 +647,13 @@ struct data_entry *load_entry(struct entries *entr, struct data_entry *entry)
 	    free_entry(entry);
 	  return NULL;
 	}
-	  
+
       maskcnt++;
       ent = 0.0;
     }
   else
     if (sscanf(toke, "%f", &ent) <= 0) {
-      fprintf(stderr, "Can't read entry on line %d, component 0\n", row);
+      fprintf(stderr, "Can't read entry on line %ld, component 0\n", row);
       if (entry_is_new)
 	free_entry(entry);
 
@@ -665,7 +667,7 @@ struct data_entry *load_entry(struct entries *entr, struct data_entry *entry)
   for (i = 1; i < dim; i++) {
     toke = strtok(NULL, SEPARATOR_CHARS);
     if (toke == NULL) {
-      fprintf(stderr, "load_entry: can't read entry in file %s on line %d, component %d\n",
+      fprintf(stderr, "load_entry: can't read entry in file %s on line %ld, component %d\n",
 	      fi->name, row, i);
       if (entry_is_new)
 	free_entry(entry);
@@ -687,7 +689,7 @@ struct data_entry *load_entry(struct entries *entr, struct data_entry *entry)
       }
     else
       if (sscanf(toke, "%f", &ent) <= 0) {
-	fprintf(stderr, "load_entry: can't read entry in file %s on line %d, component %d\n",
+	fprintf(stderr, "load_entry: can't read entry in file %s on line %ld, component %d\n",
 	      fi->name, row, i);
 	if (entry_is_new)
 	  free_entry(entry);
@@ -698,22 +700,22 @@ struct data_entry *load_entry(struct entries *entr, struct data_entry *entry)
   }
 
   /* Entries with all components masked off are normally discarded but
-     they are loaded if the skip_empty-flag is set in the flags of the 
+     they are loaded if the skip_empty-flag is set in the flags of the
      file. */
-    
+
   if (maskcnt == dim)
     {
       if (entr->flags.skip_empty)
 	{
 	  ifverbose(3)
-	    fprintf(stderr, "load_entry: skipping line %d of file %s, all components are masked off\n", row, fi->name);
+	    fprintf(stderr, "load_entry: skipping line %ld of file %s, all components are masked off\n", row, fi->name);
 	  free(mask);
 	  mask = NULL;
 	  goto read_next_line; /* load next line */
 	}
       else
 	ifverbose(3)
-	  fprintf(stderr, "load_entry: loading line %d of file %s, all components are masked off\n", row, fi->name);
+	  fprintf(stderr, "load_entry: loading line %ld of file %s, all components are masked off\n", row, fi->name);
     }
 
   if (mask)
@@ -729,15 +731,15 @@ struct data_entry *load_entry(struct entries *entr, struct data_entry *entry)
 
   label_found = 0;
 
-  while ((toke = strtok(NULL, SEPARATOR_CHARS)) != NULL) 
+  while ((toke = strtok(NULL, SEPARATOR_CHARS)) != NULL)
     {
-      if (strncmp(toke, "weight=", 7) == 0) 
+      if (strncmp(toke, "weight=", 7) == 0)
 	entry->weight = get_weight(toke);
-      else if (strncmp(toke, "fixed=", 6) == 0) 
+      else if (strncmp(toke, "fixed=", 6) == 0)
 	{
 	  if ((entry->fixed = get_fixed(toke)) == NULL)
 	    {
-	      fprintf(stderr, "bad fixed point, line %d of file %s\n", 
+	      fprintf(stderr, "bad fixed point, line %ld of file %s\n",
 		      row, fi->name);
 	      if (entry_is_new)
 		free_entry(entry);
@@ -745,10 +747,10 @@ struct data_entry *load_entry(struct entries *entr, struct data_entry *entry)
 	      return NULL;
 	    }
 	}
-      else 
+      else
 	{
 	  if (sscanf(toke, "%s", lab) <= 0) {
-	    fprintf(stderr, "Can't read entry label on line %dof file %s\n", 
+	    fprintf(stderr, "Can't read entry label on line %ld of file %s\n",
 		    row, fi->name);
 	    if (entry_is_new)
 	      free_entry(entry);
@@ -760,10 +762,10 @@ struct data_entry *load_entry(struct entries *entr, struct data_entry *entry)
 	  label_found++;
 	}
     }
-    
+
   if ((entr->flags.labels_needed) && (!label_found))
     {
-      fprintf(stderr, "Required label missing on line %d of file %s\n", 
+      fprintf(stderr, "Required label missing on line %ld of file %s\n",
 	      row, fi->name);
       if (entry_is_new)
 	free_entry(entry);
@@ -774,7 +776,7 @@ struct data_entry *load_entry(struct entries *entr, struct data_entry *entry)
   return(entry);
 }
 
-/* next_entry - Get next entry from the entries table. Returns NULL when 
+/* next_entry - Get next entry from the entries table. Returns NULL when
    at end of table or end of file is encountered. If loadmode is buffered,
    loads more data from file when needed. */
 
@@ -787,7 +789,7 @@ struct data_entry *next_entry(eptr *ptr)
 
   if (current == NULL)
     return NULL;
-  
+
   next = current->next;
 
   if (next == NULL)
@@ -803,9 +805,9 @@ struct data_entry *next_entry(eptr *ptr)
 	    else
 	      next = entries->entries;
 	  }
-      }      
+      }
   ptr->current = next;
-  if (next) 
+  if (next)
     ptr->index++;
   return next;
 }
@@ -835,7 +837,7 @@ struct data_entry *rewind_entries(struct entries *entries, eptr *ptr)
 	      return NULL;
 	    }
 	}
-      
+
       if (!read_entries(entries))
 	{
 	  fprintf(stderr, "rewind_entries failed\n");
@@ -885,7 +887,7 @@ struct data_entry *copy_entry(struct entries *entries, struct data_entry *data)
 {
   int i;
   struct data_entry *tmp;
-  
+
   clear_err();
   /* allocate memory for the copy */
   tmp = alloc_entry(entries);
@@ -1050,7 +1052,7 @@ int get_ydim(char *str)
 }
 
 
-/******************************************************************* 
+/*******************************************************************
  * Routines to handle files that contain the learning rate values  *
  *******************************************************************/
 
@@ -1135,7 +1137,7 @@ void invalidate_alphafile(char *outfile)
 }
 
 
-/******************************************************************* 
+/*******************************************************************
  * Other routines                                                  *
  *******************************************************************/
 
@@ -1151,9 +1153,9 @@ struct data_entry *randomize_entry_order(struct data_entry *entry)
 
   temp = entry;
 
-  for (nol = 0; temp != NULL; temp = temp->next) 
-    nol++; 
-  
+  for (nol = 0; temp != NULL; temp = temp->next)
+    nol++;
+
   fake.next = entry;
   newlist.next = NULL;
   prev = &newlist;
@@ -1193,11 +1195,11 @@ void set_buffer(struct entries *ent, long buffer)
 /* set_teach_params - sets values in teaching parameter structure based
    on values given in codebook and data files */
 
-int set_teach_params(struct teach_params *params, struct entries *codes, 
+int set_teach_params(struct teach_params *params, struct entries *codes,
 		     struct entries *data, long dbuffer)
 {
   int error = 0;
-  
+
   /* set data buffer size */
   if (data != NULL)
     set_buffer(data, dbuffer);
@@ -1217,7 +1219,7 @@ int set_teach_params(struct teach_params *params, struct entries *codes,
   params->dist = vector_dist_euc;
   params->vector_adapt = adapt_vector;
 
-  if (codes) 
+  if (codes)
     params->codes = codes;
   if (data)
     params->data = data;

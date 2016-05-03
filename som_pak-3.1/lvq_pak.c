@@ -565,7 +565,7 @@ struct snapshot_info *get_snapshot(char *filename, int interval, int type)
   shot->interval = interval;
   shot->type = type;
 
-  fprintf(stderr, "snapshot: filename: '%s', interval: %d, type: %s\n",
+  fprintf(stderr, "snapshot: filename: '%s', interval: %ld, type: %s\n",
 	  shot->filename, shot->interval, get_str_by_id(snapshot_list, type));
 
   return shot;

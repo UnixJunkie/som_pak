@@ -414,7 +414,7 @@ void print_hitlist(struct hitlist *hl, FILE *fp)
   for (he = hl->head; he; he = he->next)
     {
       lab = he->label;
-      fprintf(fp, "%s,%d", 
+      fprintf(fp, "%s,%ld", 
 	      (lab != LABEL_EMPTY) ? find_conv_to_lab(lab) : "EMPTY",
 	      he->freq);
       if (he->next)

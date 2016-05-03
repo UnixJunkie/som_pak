@@ -111,7 +111,7 @@ int main(int argc, char **argv)
   nod = teach.data->num_entries;
 
   ifverbose(1)
-    fprintf(stdout, "Quantization error of %s with map %s is %f per sample (%d samples)\n",
+    fprintf(stdout, "Quantization error of %s with map %s is %f per sample (%ld samples)\n",
 	    in_data_file, in_code_file, qerror / (float) nod, nod);
   else
     fprintf(stdout, "%f\n", qerror / (float) nod);

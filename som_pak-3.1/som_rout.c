@@ -637,7 +637,7 @@ struct entries *som_training(struct teach_params *teach)
       if (find_winner(codes, sample, &win_info, 1) == 0)
 	{
 	  ifverbose(3)
-	    fprintf(stderr, "ignoring empty sample %d\n", le);
+	    fprintf(stderr, "ignoring empty sample %ld\n", le);
 	  goto skip_teach; /* ignore empty samples */
 	}
       bxind = win_info.index % codes->xdim;

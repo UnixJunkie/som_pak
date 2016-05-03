@@ -437,7 +437,7 @@ int main(int argc, char **argv)
     base_name = ostrdup(mapname);
     p = strrchr(base_name, '.');
     if (p != NULL)
-      *p = (char) NULL;
+      *p = '\0';
   }
 
   label_not_needed(1);
