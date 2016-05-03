@@ -1,10 +1,10 @@
 
 # 
-CC=cc
-CFLAGS=-O2
-LDFLAGS=-s
-LDLIBS=-lm
-LD=$(CC)
+# CC=cc
+# CFLAGS=-O
+# LDFLAGS=-s
+# LDLIBS=-lm
+# LD=$(CC)
 
 ## NetBSD-1.0 (tested on Amiga)
 ## 
@@ -38,13 +38,12 @@ LD=$(CC)
 #LDLIBS=-lm
 #LD=$(CC)
 
-## Linux
-##
-#CC=gcc
-#CFLAGS=-O2
-#LDFLAGS=-s
-#LDLIBS=-lm
-#LD=$(CC)
+# Linux
+CC=gcc
+CFLAGS=-O2
+LDFLAGS=-s
+LDLIBS=-lm
+LD=$(CC)
 
 ## SGI
 ##
