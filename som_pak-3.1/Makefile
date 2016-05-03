@@ -137,3 +137,6 @@ som_rout.o:	som_rout.h lvq_pak.h datafile.h fileio.h labels.h
 vcal.o mapinit.o vsom.o qerror.o visual.o sammon.o:\
 	lvq_pak.h datafile.h fileio.h labels.h som_rout.h 
 
+clean:
+	\rm -f *.o vcal randinit mapinit lininit vsom qerror \
+	visual sammon planes vfind umat
