@@ -1,2 +1,12 @@
 som_pak-3.1/*.o
-
+som_pak-3.1/lininit
+som_pak-3.1/mapinit
+som_pak-3.1/planes
+som_pak-3.1/qerror
+som_pak-3.1/randinit
+som_pak-3.1/sammon
+som_pak-3.1/umat
+som_pak-3.1/vcal
+som_pak-3.1/vfind
+som_pak-3.1/visual
+som_pak-3.1/vsom
